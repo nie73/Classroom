@@ -70,4 +70,27 @@ ggplot(wines, aes(Argang, PrisPerLiter)) +
   geom_point() +
   facet_wrap(~ Varugrupp)
 
+# Loads the Stockholm International Film Festival data
+SIFF_data <- read_csv("Class_files/Film_events_2018-11-07.csv")
+
+# Finds the soldout films
+soldOutFilms <- SIFF_data %>% 
+  filter(eventTicketStatus == "soldout") %>% 
+  select(eventName_en, eventDate, eventTime)
+
+# Find the venue with most unique films
+filmsPerVenue <- SIFF_data %>% 
+  select(venueName,eventName_en) %>% 
+  unique() %>% 
+  count(venueName) %>% 
+  arrange(desc(n))
+
+# Calculates the soldout ratio per day
+soldoutRatio <- SIFF_data %>% 
+  select(eventDate, eventTicketStatus) %>% 
+  mutate(soldOut = ifelse(eventTicketStatus == "soldout", 1, 0)) %>% 
+  group_by(eventDate) %>% 
+  summarise(n_soldout = sum(soldOut), n = n()) %>% 
+  mutate(soRatio = n_soldout / n)
+
 ```
