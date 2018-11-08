@@ -4,16 +4,21 @@ output: github_document
 ---
 
 ```{r}
+# Loads tidyverse
 library(tidyverse, message(suppressMessages(TRUE)))
 
+# Loads data from Systembolaget
 Sortiment_hela <- read_csv("Class_files/systembolaget2018-10-08.csv")
 
+# Makes alkoholhalt numeric
 Sortiment_hela <- Sortiment_hela %>% 
   mutate(Alkoholhalt = as.numeric(gsub("%", "", Alkoholhalt))/100)
 
+# Corrects Varugrupp
 Sortiment_hela <- Sortiment_hela %>%
   mutate(Varugrupp = ifelse(Varugrupp=="Röda", "Rött vin",ifelse(Varugrupp=="Vita", "Vitt vin", Varugrupp)))
 
+# Find most expensive product per liter
 MaxPriceName <- Sortiment_hela %>%
   filter(PrisPerLiter == max(PrisPerLiter)) %>%
   select(Namn)
@@ -23,20 +28,26 @@ MaxPriceName <- Sortiment_hela %>%
 `r MaxPriceName` has the highest price per liter.
 
 ```{r}
+# loads knitr
 library(knitr)
 
+# Filter on regular product range
 Sortiment_ord <- Sortiment_hela %>%
   filter(SortimentText == "Ordinarie sortiment")
 
+# Find most expensive per liter
 mostExpensive <- Sortiment_ord %>%
   arrange(desc(PrisPerLiter)) %>%
   select(Artikelid, Namn, Volymiml, Varugrupp, Alkoholhalt, PrisPerLiter) %>% 
   head(10)
 
+# Creates table of most expensive
 kable(mostExpensive, caption = "Most expensive beverages in regular product range")
 
+# Loads ggplot2
 library(ggplot2)
 
+# Plots alcohol strength vs price per liter
 ggplot(Sortiment_ord, aes(x = Alkoholhalt, y = PrisPerLiter, color = Varugrupp)) +
   geom_point() +
   scale_y_log10()
@@ -46,10 +57,12 @@ ggplot(Sortiment_ord, aes(Varugrupp, PrisPerLiter)) +
   scale_y_log10() +
   coord_flip()
 
+# Filter on wines from year 2010-2017
 wines <- Sortiment_ord %>% 
   filter(Varugrupp %in% c("Vitt vin", "Rött vin", "Rosévin", "Mousserande vin"),
          Argang %in% c(2010:2017))
 
+# Plot wines
 ggplot(wines, aes(Argang, PrisPerLiter, color = Varugrupp)) +
   geom_point()
 
